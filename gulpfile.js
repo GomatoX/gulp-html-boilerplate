@@ -24,16 +24,20 @@ const config = {
 	
 	sass: {
 		source: 'assets/sass/',
-		destination: 'assets/css',
-		outputStyle: 'compressed',
-		distribution: 'assets/dist/css/'
+		destination: 'assets/css/',
+		outputStyle: 'nested',
+		distribution: 'assets/dist/'
 	},
 	jshint: {
 		source: 'assets/js/',
 	},
+	html: {
+		source: 'logic/'
+	},
 	iconfont: {
 		source: 'assets/fonts/svg/',
 		destination: 'assets/fonts/',
+		sassIncludePath: '../fonts/',
 		sassDestination: 'assets/sass/core/',
 		template: 'assets/sass/helpers/',
 		fontName: 'icons',
@@ -41,7 +45,7 @@ const config = {
 	},
 	uglify: {
 		manifest: 'assets/js/manifest.json',
-		distribution: 'assets/dist/js/',
+		distribution: 'assets/dist/',
 		fileName: 'all.min.js'
 	},
 	imageOptim: {
@@ -66,8 +70,25 @@ var ModuleSass = (function( production ){
 				this.emit('end');
 			})
 		)
+		.pipe(
+			gulpif(
+				!production,
+				sourcemaps.write()
+			)
+		)
+		.pipe(
+			gulpif(
+				!production,
+				sourcemaps.init()
+			)
+		)
 		.pipe(autoprefixer('last 3 versions'))
-		.pipe(gulpif( !production, sourcemaps.write() ))
+		.pipe(
+			gulpif(
+				!production,
+				sourcemaps.write()
+			)
+		)
 		.pipe(gulpif( !production, gulp.dest( base + config.sass.destination ), gulp.dest( base + config.sass.distribution ) ))
 		.pipe( livereload() );
 });
@@ -108,7 +129,7 @@ var ModuleJsUglify = (function(){
 		return false;
 	}
 	
-	var manifest = JSON.parse(fs.readFileSync(config.uglify.manifest, 'utf8'));
+	var manifest = JSON.parse( fs.readFileSync(config.uglify.manifest, 'utf8') );
 	
 	gulp.src( manifest )
 		.pipe(concat( config.uglify.fileName ))
@@ -170,7 +191,7 @@ var ModuleIconfont = (function(){
 			.pipe(consolidate('lodash', {
 				glyphs: unicodeGlyphs,
 				fontName: config.iconfont.fontName,
-				fontPath: config.iconfont.destination,
+				fontPath: config.iconfont.sassIncludePath,
 				className: config.iconfont.className,
 				timestamp: timestamp
 			}))
@@ -208,6 +229,13 @@ gulp.task( 'watch', function() {
 	], function() {
 		
 		ModuleSass();
+	});
+	
+	watch([
+		base + config.html.source + '**/*.html'
+	], function() {
+		
+		livereload.reload();
 	});
 	
 	watch([

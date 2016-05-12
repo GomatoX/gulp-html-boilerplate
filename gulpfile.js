@@ -13,8 +13,8 @@ const uglify 			= require( 'gulp-uglify' );
 const newer 			= require( 'gulp-newer' );
 const imageop 			= require( 'gulp-image-optimization' );
 const lodash  			= require( 'lodash' );
-
 const concat 			= require( 'gulp-concat' );
+const spritesmith 		= require('gulp.spritesmith');
 
 require('gulp-stats')(gulp);
 
@@ -51,6 +51,11 @@ const config = {
 	imageOptim: {
 		source: 'assets/images/',
 		destination: 'assets/dist/images/'
+	},
+	sprites: {
+		source: 'assets/images/sprites/',
+		destination: 'assets/images/',
+		desitnationSCSS: 'assets/sass/helpers/'
 	}
 };
 
@@ -205,11 +210,26 @@ var ModuleIconfont = (function(){
 	.pipe(gulp.dest( config.iconfont.destination ));
 });
 
+var ModuleSprites = function() {
+	
+	var spriteData = 
+			gulp.src(config.sprites.source + '*.png' )
+			.pipe(
+				spritesmith({
+					imgName: config.sprites.destination + 'sprite.png',
+					cssName: config.sprites.desitnationSCSS + '_sprite.scss'
+				}
+			)
+		);
+	return spriteData.pipe(gulp.dest( base ));
+};
+
 gulp.task( 'default', function() {
 	
+	ModuleSprites();
+	ModuleIconfont();
 	ModuleSass();
 	ModuleJsHint();
-	ModuleIconfont();
 	ModuleImageOptim();
 });
 
@@ -237,6 +257,13 @@ gulp.task( 'watch', function() {
 		
 		livereload.reload();
 	});
+	
+	watch([
+		base + config.sprites.source + '**/*'
+	], function() {
+		
+		ModuleSprites();
+	})
 	
 	watch([
 		base + config.jshint.source + '**/*.js',

@@ -22,5 +22,6 @@ What we get:
 | svg icon font | :heavy_check_mark:  | :heavy_check_mark: | |
 | livereload | :heavy_check_mark:  | :heavy_check_mark: | |
 | notifications|:heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:|
+| spritesmith |:heavy_check_mark: | :heavy_check_mark: | |
 
 Configurations we can edit in gulpfile.js  `const config`

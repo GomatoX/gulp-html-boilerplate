@@ -240,50 +240,106 @@ gulp.task( 'production', function() {
 	ModuleImageOptim();
 });
 
+var startWatching = function( type ) {
+	
+	console.error('Starting to watch: ' + type );
+	
+	switch( type ) {
+		
+		case 'sass':
+			
+			watch([
+				base + config.sass.source + '**'
+			], function() {
+				
+				ModuleSass();
+			});
+		break;
+		
+		case 'html':
+			
+			watch([
+				base + config.html.source + '**/*.html'
+			], function() {
+				
+				livereload.reload();
+			});
+		break;
+		
+		case 'sprites':
+			
+			watch([
+				base + config.sprites.source + '**/*'
+			], function() {
+				
+				ModuleSprites();
+			});
+		break;
+		
+		case 'jshint':
+			
+			watch([
+				base + config.jshint.source + '**/*.js',
+				'!' + base + config.jshint.source + '**/*.min.*'
+			], function() {
+				
+				ModuleJsHint();
+			});
+		break;
+		
+		case 'iconfont':
+			
+			watch([
+				base + config.iconfont.source + '**/*',
+			], function() {
+				
+				// there is saving issue
+				// some software creats tmp files while saving, so wait while it will be 
+				// saved fully
+				setTimeout(function() {
+					
+					ModuleIconfont();
+				}, 500);
+			}).on( 'error', function( error ) {
+				
+				console.error( error );
+			});
+		break;
+		
+		case 'images':
+			
+			watch([
+				base + config.imageOptim.source + '**/*'
+			], function() {
+				
+				ModuleImageOptim();
+			});
+		break;
+		
+		default:
+			console.error('No selected process: ' + type );
+		break;
+	}
+};
+
 gulp.task( 'watch', function() {
 	
 	livereload.listen();
 	
-	watch([
-		base + config.sass.source + '**'
-	], function() {
+	if ( typeof process.argv[3] !== 'undefined' && process.argv[3] === '--only' ) {
 		
-		ModuleSass();
-	});
-	
-	watch([
-		base + config.html.source + '**/*.html'
-	], function() {
+		if ( typeof process.argv[4] !== 'undefined' ) {
+			
+			startWatching( process.argv[4] );
+		}
 		
-		livereload.reload();
-	});
-	
-	watch([
-		base + config.sprites.source + '**/*'
-	], function() {
+	} else {
 		
-		ModuleSprites();
-	})
-	
-	watch([
-		base + config.jshint.source + '**/*.js',
-		'!' + base + config.jshint.source + '**/*.min.*'
-	], function() {
-		
-		ModuleJsHint();
-	});
-	
-	watch([
-		base + config.iconfont.source + '**/*',
-	], function() {
-		
-		ModuleIconfont();
-	});
-	
-	watch([
-		base + config.imageOptim.source + '**/*'
-	], function() {
-		
-		ModuleImageOptim();
-	})
+		startWatching( 'sass' );
+		startWatching( 'images' );
+		startWatching( 'jshint' );
+		startWatching( 'sprites' );
+		startWatching( 'iconfont' );
+		startWatching( 'html' );
+	}
 });
